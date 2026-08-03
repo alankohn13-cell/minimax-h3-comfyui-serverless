@@ -4,13 +4,11 @@ FROM runpod/worker-comfyui:5.8.6-base
 RUN cd /comfyui && git fetch --depth 1 origin refs/tags/v0.30.1 && git checkout FETCH_HEAD && \
     /comfyui/.venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# comfy-kitchen's CUDA backend (needed for the int8_convrot / nvfp4 H3 weights) is built
-# against CUDA 13: on a GPU host its import fails under the base image's cu126 torch, the
-# ImportError is swallowed, and every quant layout resolves to None ("'NoneType' object
-# has no attribute 'Params'" in UNETLoader). CPU-only containers never load the backend,
-# which is why the bug only shows on workers. Upgrade torch to cu130.
-RUN /comfyui/.venv/bin/pip install --no-cache-dir --upgrade torch torchvision torchaudio \
-      --index-url https://download.pytorch.org/whl/cu130
+# Stay on the base image's cu126 torch: RunPod's H100/H200 fleet runs driver 570.x
+# (CUDA 12.8) and cu130 torch cannot even initialize there (verified on a live H200:
+# "The NVIDIA driver on your system is too old"). comfy-kitchen's CUDA backend stays
+# unavailable under cu126 (ComfyUI disables it for < 13.0) — inference runs on the
+# eager backend, which implements all int8_convrot / nvfp4 ops needed by H3.
 
 # Weights are NOT baked here: 42.5GB of layers makes buildkit's export step need
 # 2x that on disk, which no GHA runner survives. The workflow instead builds this
