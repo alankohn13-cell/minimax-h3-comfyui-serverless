@@ -16,6 +16,7 @@ jobs:
           import torch
           print('torch:', torch.__version__, 'cuda:', torch.version.cuda)
           subprocess.run(['/opt/venv/bin/pip', 'show', 'comfy-kitchen'])
+          assert '+cu126' in torch.__version__, 'torch must be a cu126 wheel — RunPod fleet driver is 570.x (CUDA 12.8), cu130 cannot init'
           import comfy.quant_ops as q
           print('CK available:', q._CK_AVAILABLE)
           from comfy.quant_ops import get_layout_class, QUANT_ALGOS
