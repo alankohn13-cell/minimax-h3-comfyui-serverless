@@ -56,6 +56,11 @@ Knobs in `example_workflows/t2v_api.json`:
 
 ## Build pipeline
 
-Push to `Dockerfile` or `build.yml` → GHA builds and pushes to ghcr (~180 min timeout).
-The workflow uses `easimon/maximize-build-space` to merge / and /mnt into a ~110 GB LVM volume and
-remounts `/var/lib/docker` there — the default runner disk cannot hold the 42.5 GB of weight layers.
+Push to `Dockerfile` or `build.yml` → GHA builds and pushes to ghcr.
+
+Two-phase build (the naive single Dockerfile OOMs the runner disk — buildkit's export step needs
+~2x the 42.5 GB of weight content):
+
+1. `docker build` a slim **:code** image (base + ComfyUI v0.30.1 pin, no weights) and push it
+2. For each weight file: download → tar → **`crane append`** streams it onto the remote image as a
+   new layer (peak disk = one file + its tar, on /mnt) → final manifest tagged **:latest**
