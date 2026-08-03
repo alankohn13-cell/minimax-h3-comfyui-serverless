@@ -5,20 +5,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Test comfy_kitchen import inside the code image
+      - name: Test ComfyUI quant registration chain inside the code image
         run: |
-          docker run --rm ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:code /comfyui/.venv/bin/python -c "
-          import sys, subprocess
-          print('python:', sys.version)
-          import torch
-          print('torch:', torch.__version__, 'cuda:', torch.version.cuda)
-          subprocess.run(['/comfyui/.venv/bin/pip', 'show', 'comfy-kitchen'])
+          docker run --rm -w /comfyui ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:code /comfyui/.venv/bin/python -c "
+          import subprocess, sys
+          print('comfyui HEAD:', subprocess.run(['git','-C','/comfyui','log','-1','--format=%H %cI %s'],capture_output=True,text=True).stdout.strip())
+          sys.path.insert(0, '/comfyui')
+          import comfy.quant_ops as q
+          print('CK available:', getattr(q, '_CK_AVAILABLE', 'attr-missing'))
+          from comfy.quant_ops import get_layout_class
+          for name in ['TensorWiseINT8Layout','TensorCoreNVFP4Layout','TensorCoreConvRotW4A4Layout','TensorCoreFP8Layout']:
+              print(name, '->', get_layout_class(name))
           try:
-              import comfy_kitchen
-              print('comfy_kitchen import OK', getattr(comfy_kitchen, '__version__', 'n/a'))
-              from comfy_kitchen.tensor import TensorWiseINT8Layout, TensorCoreNVFP4Layout, TensorCoreConvRotW4A4Layout
-              print('required layouts OK')
-          except BaseException as e:
-              import traceback; traceback.print_exc()
-              print('KITCHEN FAILED:', type(e).__name__, e)
+              from comfy.quant_ops import QUANT_ALGOS
+          except ImportError:
+              from comfy.ops import QUANT_ALGOS
+          print('QUANT_ALGOS keys:', list(QUANT_ALGOS.keys()))
+          import os
+          print('has nodes_minimax_h3:', os.path.exists('/comfyui/comfy_extras/nodes_minimax_h3.py'))
           "
