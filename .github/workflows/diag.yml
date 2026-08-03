@@ -5,22 +5,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Test ComfyUI quant registration chain inside the code image
+      - name: Verify torch cu130 and kitchen backends in the code image
         run: |
           docker run --rm -w /comfyui ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:code /comfyui/.venv/bin/python -c "
-          import subprocess, sys
-          print('comfyui HEAD:', subprocess.run(['git','-C','/comfyui','log','-1','--format=%H %cI %s'],capture_output=True,text=True).stdout.strip())
-          sys.path.insert(0, '/comfyui')
+          import sys; sys.path.insert(0, '/comfyui')
+          import torch
+          print('torch:', torch.__version__, 'cuda:', torch.version.cuda)
+          import comfy_kitchen as ck
+          print('kitchen backends:', ck.list_backends())
           import comfy.quant_ops as q
-          print('CK available:', getattr(q, '_CK_AVAILABLE', 'attr-missing'))
-          from comfy.quant_ops import get_layout_class
-          for name in ['TensorWiseINT8Layout','TensorCoreNVFP4Layout','TensorCoreConvRotW4A4Layout','TensorCoreFP8Layout']:
-              print(name, '->', get_layout_class(name))
-          try:
-              from comfy.quant_ops import QUANT_ALGOS
-          except ImportError:
-              from comfy.ops import QUANT_ALGOS
-          print('QUANT_ALGOS keys:', list(QUANT_ALGOS.keys()))
-          import os
-          print('has nodes_minimax_h3:', os.path.exists('/comfyui/comfy_extras/nodes_minimax_h3.py'))
+          print('CK available:', q._CK_AVAILABLE)
+          from comfy.quant_ops import get_layout_class, QUANT_ALGOS
+          for fmt, conf in QUANT_ALGOS.items():
+              print(fmt, '->', conf['comfy_tensor_layout'], '->', get_layout_class(conf['comfy_tensor_layout']))
           "
