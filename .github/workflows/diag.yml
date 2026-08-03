@@ -1,0 +1,24 @@
+name: diag-kitchen-import
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Test comfy_kitchen import inside the code image
+        run: |
+          docker run --rm ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:code /comfyui/.venv/bin/python -c "
+          import sys, subprocess
+          print('python:', sys.version)
+          import torch
+          print('torch:', torch.__version__, 'cuda:', torch.version.cuda)
+          subprocess.run(['/comfyui/.venv/bin/pip', 'show', 'comfy-kitchen'])
+          try:
+              import comfy_kitchen
+              print('comfy_kitchen import OK', getattr(comfy_kitchen, '__version__', 'n/a'))
+              from comfy_kitchen.tensor import TensorWiseINT8Layout, TensorCoreNVFP4Layout, TensorCoreConvRotW4A4Layout
+              print('required layouts OK')
+          except BaseException as e:
+              import traceback; traceback.print_exc()
+              print('KITCHEN FAILED:', type(e).__name__, e)
+          "
