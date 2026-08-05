@@ -23,14 +23,10 @@ RUN cd /comfyui && git fetch --depth 1 origin refs/tags/v0.30.1 && git checkout 
       --index-url https://download.pytorch.org/whl/cu130
 
 # Fail the build rather than ship a wheel that cannot drive the target GPUs.
-RUN /opt/venv/bin/python -c "\
-import torch, sys; \
-v = torch.__version__; \
-assert '+cu13' in v, f'expected a cu13x wheel, got {v}'; \
-archs = torch.cuda.get_arch_list(); \
-print('torch', v, 'archs:', archs); \
-missing = [a for a in ('sm_90', 'sm_120') if a not in archs]; \
-sys.exit('missing required archs: ' + ','.join(missing)) if missing else None"
+# (torch.cuda.get_arch_list() is useless here — it returns [] on a GPU-less builder —
+# so check_arch.py scans the compiled library instead.)
+COPY check_arch.py /tmp/check_arch.py
+RUN /opt/venv/bin/python /tmp/check_arch.py sm_90 sm_120 && rm /tmp/check_arch.py
 
 # Weights are appended as separate layers by the build workflow (see .github/workflows/build-cu130.yml).
 RUN mkdir -p /comfyui/models/diffusion_models /comfyui/models/text_encoders /comfyui/models/vae

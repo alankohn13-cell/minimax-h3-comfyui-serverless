@@ -1,7 +1,7 @@
 name: build-minimax-h3-image-cu130
 on:
   push:
-    paths: ['Dockerfile.cu130', '.github/workflows/build-cu130.yml']
+    paths: ['Dockerfile.cu130', 'check_arch.py', '.github/workflows/build-cu130.yml']
   workflow_dispatch:
 jobs:
   build:
