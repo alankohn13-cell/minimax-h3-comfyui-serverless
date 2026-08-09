@@ -4,16 +4,16 @@ MiniMax H3 (Hailuo 3.0) video+audio generation as a RunPod serverless worker.
 Sister repo of [krea2-comfyui-serverless](https://github.com/vincezh2000/krea2-comfyui-serverless), same pattern:
 `runpod/worker-comfyui` base, weights baked into the image, GHA builds → ghcr.
 
-**Image:** `ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:latest`
+**Image:** `ghcr.io/alankohn13-cell/minimax-h3-comfyui-serverless:latest`
 
 ## What's inside
 
 - Base: `runpod/worker-comfyui:5.8.6-base`, ComfyUI pinned to **v0.30.1** (native H3 nodes need ≥0.30.0)
-- Weights (ComfyUI-recommended pruned int8 set, 42.5 GB total, from [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)):
+- Weights (ComfyUI-recommended pruned int8 set + Ref2VA, 63.5 GB total, from [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)):
   - `minimax_h3_fl2va_pruned_int8_convrot.safetensors` (21 GB) — covers **T2V and first/last-frame I2V**
+  - `minimax_h3_ref2va_pruned_int8_convrot.safetensors` (21 GB) — **R2V identity/voice reference path**
   - `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` (15.7 GB) — text encoder
   - `minimax_h3_video_vae_fp16.safetensors` (5.2 GB) + `minimax_h3_audio_vae_fp32.safetensors` (0.6 GB)
-- NOT included: `ref2va` model (reference-to-video, another 21 GB). Add a fourth aria2 RUN in the Dockerfile if needed.
 
 Model capabilities: up to ~15s at 24 FPS with **native stereo audio** (speech/SFX/music generated in the same pass),
 768px-short-edge canvas (max 768×1344 px area), aspect ratios from 21:9 to 9:16.
@@ -22,9 +22,9 @@ Model capabilities: up to ~15s at 24 FPS with **native stereo audio** (speech/SF
 
 | Setting | Value |
 |---|---|
-| Container image | `ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:latest` |
+| Container image | `ghcr.io/alankohn13-cell/minimax-h3-comfyui-serverless:latest` |
 | GPU | 80 GB (A100/H100) recommended; 48 GB (L40S/A6000) works for 768p with offloading |
-| Container disk | **≥ 100 GB** (image unpacks to ~55 GB) |
+| Container disk | **≥ 120 GB** (image unpacks to ~76 GB) |
 | FlashBoot | on |
 | Env (optional) | `BUCKET_ENDPOINT_URL` etc. for S3 output upload — without it results return as base64 |
 
