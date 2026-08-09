@@ -33,7 +33,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/vincezh2000/minimax-h3-comfyui-serverless:code
+          tags: ghcr.io/alankohn13-cell/minimax-h3-comfyui-serverless:code
           provenance: false
       - name: Install crane
         uses: imjasonh/setup-crane@v0.4
@@ -48,7 +48,7 @@ jobs:
           crane auth login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
           WORK=/mnt/weights
           sudo mkdir -p "$WORK" && sudo chown "$USER" "$WORK"
-          IMG=ghcr.io/vincezh2000/minimax-h3-comfyui-serverless
+          IMG=ghcr.io/alankohn13-cell/minimax-h3-comfyui-serverless
           BASE="$IMG:code"
           append() { # $1 models subdir, $2 filename, $3 url
             mkdir -p "$WORK/stage/comfyui/models/$1"
@@ -69,4 +69,6 @@ jobs:
             https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors
           append vae minimax_h3_audio_vae_fp32.safetensors \
             https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors
+          append diffusion_models minimax_h3_ref2va_pruned_int8_convrot.safetensors \
+            https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors
           crane tag "$IMG:wip" latest
