@@ -16,8 +16,18 @@ RUN cd /comfyui && git fetch --depth 1 origin refs/tags/v0.30.1 && git checkout 
     /opt/venv/bin/pip install --no-cache-dir --force-reinstall torch==2.12.0 torchvision torchaudio \
       --index-url https://download.pytorch.org/whl/cu126
 
+# --- SeedVR2 video upscaler node (workflow nodes 16/17/18) ---
+# Requires numz/ComfyUI-SeedVR2_VideoUpscaler (io.ComfyNode, v3 API). Weights
+# (DiT 7B fp16 + VAE fp16) are NOT baked here: build.yml streams them into
+# /comfyui/models/SEEDVR2 with crane append, same scheme as the H3 weights.
+RUN git clone --depth 1 \
+      https://github.com/numz/ComfyUI-SeedVR2_VideoUpscaler.git \
+      /comfyui/custom_nodes/ComfyUI-SeedVR2_VideoUpscaler && \
+    /opt/venv/bin/pip install --no-cache-dir \
+      -r /comfyui/custom_nodes/ComfyUI-SeedVR2_VideoUpscaler/requirements.txt
+
 # Weights are NOT baked here: 42.5GB of layers makes buildkit's export step need
 # 2x that on disk, which no GHA runner survives. The workflow instead builds this
 # slim "code" image, then streams each weight file onto it as an image layer with
 # `crane append` (single-copy disk usage). See .github/workflows/build.yml.
-RUN mkdir -p /comfyui/models/diffusion_models /comfyui/models/text_encoders /comfyui/models/vae
+RUN mkdir -p /comfyui/models/diffusion_models /comfyui/models/text_encoders /comfyui/models/vae /comfyui/models/SEEDVR2
