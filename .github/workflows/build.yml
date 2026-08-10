@@ -69,10 +69,9 @@ jobs:
             https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors
           append vae minimax_h3_audio_vae_fp32.safetensors \
             https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors
-          append diffusion_models minimax_h3_ref2va_pruned_int8_convrot.safetensors \
+append diffusion_models minimax_h3_ref2va_pruned_int8_convrot.safetensors \
             https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors
-          append SEEDVR2 seedvr2_ema_7b_fp16.safetensors \
-            https://huggingface.co/numz/SeedVR2_comfyUI/resolve/main/seedvr2_ema_7b_fp16.safetensors
-          append SEEDVR2 ema_vae_fp16.safetensors \
-            https://huggingface.co/numz/SeedVR2_comfyUI/resolve/main/ema_vae_fp16.safetensors
+          # SeedVR2: node pack auto-downloads ema_7b + vae do numz/SeedVR2_comfyUI
+          # no primeiro uso (extra ~14GB só quando o upscale pedir). Não entra na
+          # imagem: mantém ~46GB, tamanho comprovadamente puxável nos workers.
           crane tag "$IMG:wip" latest
